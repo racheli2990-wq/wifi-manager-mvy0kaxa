@@ -7,6 +7,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.ShapeDrawable;
+import android.graphics.drawable.RoundRectShape;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
@@ -24,8 +26,6 @@ import android.widget.LinearLayout;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
-import androidx.core.content.ContextCompat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -142,7 +142,7 @@ public class MainActivity extends Activity {
                 ScanResult selectedScan = wifiScanList.get(position);
                 selectedSSID = selectedScan.SSID;
 
-                boolean isSecured = !WifiManager.isNetworkOpen(selectedScan.capabilities);
+                boolean isSecured = !isNetworkOpen(selectedScan.capabilities);
                 if (isSecured) {
                     passwordInputLayout.setVisibility(View.VISIBLE);
                     passwordEditText.setText(""); // Clear previous password
@@ -155,16 +155,20 @@ public class MainActivity extends Activity {
     }
 
     private android.graphics.drawable.Drawable createRoundedBackground(int color, int radius) {
-        android.graphics.drawable.ShapeDrawable shapeDrawable = new android.graphics.drawable.ShapeDrawable(new android.graphics.drawable.RoundRectShape(new float[]{radius, radius, radius, radius, radius, radius, radius, radius}, null, null));
+        float[] outerRadii = new float[8];
+        for (int i = 0; i < 8; i++) {
+            outerRadii[i] = radius;
+        }
+        ShapeDrawable shapeDrawable = new ShapeDrawable(new RoundRectShape(outerRadii, null, null));
         shapeDrawable.getPaint().setColor(color);
         return shapeDrawable;
     }
 
     private boolean checkPermissions() {
-        int coarseLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION);
-        int fineLocationPermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION);
-        int wifiStatePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_WIFI_STATE);
-        int changeWifiStatePermission = ContextCompat.checkSelfPermission(this, Manifest.permission.CHANGE_WIFI_STATE);
+        int coarseLocationPermission = checkSelfPermission(Manifest.permission.ACCESS_COARSE_LOCATION);
+        int fineLocationPermission = checkSelfPermission(Manifest.permission.ACCESS_FINE_LOCATION);
+        int wifiStatePermission = checkSelfPermission(Manifest.permission.ACCESS_WIFI_STATE);
+        int changeWifiStatePermission = checkSelfPermission(Manifest.permission.CHANGE_WIFI_STATE);
         return coarseLocationPermission == PackageManager.PERMISSION_GRANTED &&
                fineLocationPermission == PackageManager.PERMISSION_GRANTED &&
                wifiStatePermission == PackageManager.PERMISSION_GRANTED &&
@@ -279,14 +283,12 @@ public class MainActivity extends Activity {
             String security = "פתוחה";
             if (capabilities.contains("WEP")) {
                 security = "WEP";
+            } else if (capabilities.contains("WPA2")) { // Prioritize WPA2 over WPA
+                security = "WPA2";
             } else if (capabilities.contains("WPA")) {
                 security = "WPA";
-            } else if (capabilities.contains("WPA2")) {
-                security = "WPA2";
             } else if (capabilities.contains("WPA3")) {
                 security = "WPA3";
-            } else if (capabilities.contains("ESS")) {
-                 security = "ESS"; // Example for Enterprise Networks, though simplified
             }
 
             // A simple way to show signal strength
