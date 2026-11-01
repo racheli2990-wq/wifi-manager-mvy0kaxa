@@ -7,8 +7,10 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
+import android.graphics.drawable.Drawable;
+import android.graphics.drawable.GradientDrawable;
 import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.shapes.RoundRectShape; // Corrected import
+import android.graphics.drawable.shapes.RoundRectShape;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
@@ -44,6 +46,16 @@ public class MainActivity extends Activity {
     private String selectedSSID;
     private WifiReceiver wifiReceiver;
 
+    // Color palette
+    private final int COLOR_PRIMARY = 0xFF4CAF50; // Green
+    private final int COLOR_ACCENT = 0xFFFFC107; // Amber
+    private final int COLOR_BACKGROUND = 0xFFF5F5F5; // Light Gray
+    private final int COLOR_SURFACE = 0xFFFFFFFF; // White
+    private final int COLOR_ON_SURFACE = 0xFF212121; // Dark Gray
+    private final int COLOR_ON_PRIMARY = 0xFFFFFFFF; // White
+    private final int COLOR_BUTTON_DISABLED = 0xFFBDBDBD; // Medium Gray
+    private final int COLOR_DIVIDER = 0xFFE0E0E0; // Light Gray for dividers
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -61,18 +73,20 @@ public class MainActivity extends Activity {
     private void setupUI() {
         LinearLayout mainLayout = new LinearLayout(this);
         mainLayout.setOrientation(LinearLayout.VERTICAL);
-        mainLayout.setPadding(16, 16, 16, 16);
+        mainLayout.setPadding(dpToPx(16), dpToPx(16), dpToPx(16), dpToPx(16));
         mainLayout.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
-        mainLayout.setBackgroundColor(0xFFF5F5F5); // Light gray background
+        mainLayout.setBackgroundColor(COLOR_BACKGROUND);
 
         TextView titleTextView = new TextView(this);
         titleTextView.setText("רשתות WiFi זמינות");
         titleTextView.setTextSize(24);
         titleTextView.setGravity(Gravity.CENTER_HORIZONTAL);
-        titleTextView.setTextColor(0xFF212121); // Dark gray text
-        titleTextView.setLayoutParams(new LinearLayout.LayoutParams(
+        titleTextView.setTextColor(COLOR_ON_SURFACE);
+        LinearLayout.LayoutParams titleParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT));
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        titleParams.bottomMargin = dpToPx(16);
+        titleTextView.setLayoutParams(titleParams);
         mainLayout.addView(titleTextView);
 
         wifiListView = new ListView(this);
@@ -81,45 +95,51 @@ public class MainActivity extends Activity {
                 0,
                 1.0f
         );
-        listParams.setMargins(0, 16, 0, 16);
+        listParams.setMargins(0, 0, 0, dpToPx(16));
         wifiListView.setLayoutParams(listParams);
-        wifiListView.setDividerHeight(1); // Add a small divider
-        wifiListView.setDivider(getResources().getDrawable(android.R.drawable.divider_horizontal_bright));
+        wifiListView.setDividerHeight(1);
+        Drawable dividerDrawable = new GradientDrawable();
+        ((GradientDrawable)dividerDrawable).setColor(COLOR_DIVIDER);
+        wifiListView.setDivider(dividerDrawable);
+        wifiListView.setCacheColorHint(android.R.color.transparent); // Prevent scrolling lag
         mainLayout.addView(wifiListView);
 
         passwordInputLayout = new LinearLayout(this);
         passwordInputLayout.setOrientation(LinearLayout.HORIZONTAL);
-        passwordInputLayout.setLayoutParams(new LinearLayout.LayoutParams(
+        LinearLayout.LayoutParams inputLayoutParams = new LinearLayout.LayoutParams(
                 ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT));
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        inputLayoutParams.topMargin = dpToPx(8);
+        passwordInputLayout.setLayoutParams(inputLayoutParams);
         passwordInputLayout.setVisibility(View.GONE);
         passwordInputLayout.setGravity(Gravity.CENTER_VERTICAL);
         passwordInputLayout.setBaselineAligned(false);
-        passwordInputLayout.setBackgroundColor(0xFFFFFFFF); // White background for input area
-        passwordInputLayout.setPadding(16, 16, 16, 16);
+        passwordInputLayout.setBackgroundColor(COLOR_SURFACE);
+        passwordInputLayout.setPadding(dpToPx(16), dpToPx(16), dpToPx(16), dpToPx(16));
         passwordInputLayout.setLayoutDirection(View.LAYOUT_DIRECTION_RTL);
-
+        passwordInputLayout.setElevation(dpToPx(4)); // Subtle shadow
 
         passwordEditText = new EditText(this);
         passwordEditText.setHint("הכנס סיסמה");
         passwordEditText.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+        passwordEditText.setHintTextColor(0xFF9E9E9E); // Lighter gray for hint
         LinearLayout.LayoutParams passwordEditParams = new LinearLayout.LayoutParams(
                 0,
                 ViewGroup.LayoutParams.WRAP_CONTENT,
                 1.0f
         );
-        passwordEditParams.setMargins(0, 0, 16, 0);
+        passwordEditParams.setMargins(0, 0, dpToPx(16), 0);
         passwordEditText.setLayoutParams(passwordEditParams);
-        passwordEditText.setBackground(createRoundedBackground(0xFFE0E0E0, 8)); // Light gray rounded background
-        passwordEditText.setPadding(16, 16, 16, 16);
+        passwordEditText.setBackground(createRoundedBackground(COLOR_DIVIDER, 8));
+        passwordEditText.setPadding(dpToPx(16), dpToPx(16), dpToPx(16), dpToPx(16));
         passwordInputLayout.addView(passwordEditText);
 
         connectButton = new Button(this);
         connectButton.setText("התחבר");
         connectButton.setTextSize(16);
-        connectButton.setTextColor(0xFFFFFFFF); // White text
-        connectButton.setBackground(createRoundedBackground(0xFF4CAF50, 8)); // Green rounded button
-        connectButton.setPadding(24, 16, 24, 16);
+        connectButton.setTextColor(COLOR_ON_PRIMARY);
+        connectButton.setBackground(createRoundedBackground(COLOR_PRIMARY, 8));
+        connectButton.setPadding(dpToPx(24), dpToPx(16), dpToPx(24), dpToPx(16));
         connectButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -133,7 +153,24 @@ public class MainActivity extends Activity {
         setContentView(mainLayout);
 
         wifiScanList = new ArrayList<>();
-        wifiListAdapter = new ArrayAdapter<>(this, R.layout.list_item_wifi, R.id.ssidTextView, new ArrayList<>());
+        wifiListAdapter = new ArrayAdapter<String>(this, R.layout.list_item_wifi, R.id.ssidTextView, new ArrayList<>()) {
+            @Override
+            public View getView(int position, View convertView, ViewGroup parent) {
+                View view = super.getView(position, convertView, parent);
+                TextView ssidTextView = view.findViewById(R.id.ssidTextView);
+                TextView securityTextView = view.findViewById(R.id.securityTextView);
+
+                ScanResult result = wifiScanList.get(position);
+                String capabilities = result.capabilities;
+                String security = getSecurityType(capabilities);
+                String signalStrength = getSignalStrength(result.level);
+
+                ssidTextView.setText(result.SSID);
+                securityTextView.setText(signalStrength + " (" + security + ")");
+
+                return view;
+            }
+        };
         wifiListView.setAdapter(wifiListAdapter);
 
         wifiListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -154,13 +191,16 @@ public class MainActivity extends Activity {
         });
     }
 
-    private android.graphics.drawable.Drawable createRoundedBackground(int color, int radius) {
-        float[] outerRadii = new float[8];
-        for (int i = 0; i < 8; i++) {
-            outerRadii[i] = radius;
-        }
-        ShapeDrawable shapeDrawable = new ShapeDrawable(new RoundRectShape(outerRadii, null, null)); // Corrected usage
-        shapeDrawable.getPaint().setColor(color);
+    private int dpToPx(int dp) {
+        float density = getResources().getDisplayMetrics().density;
+        return Math.round(dp * density);
+    }
+
+    private Drawable createRoundedBackground(int color, int radius) {
+        GradientDrawable shapeDrawable = new GradientDrawable();
+        shapeDrawable.setShape(GradientDrawable.RECTANGLE);
+        shapeDrawable.setColor(color);
+        shapeDrawable.setCornerRadius(dpToPx(radius));
         return shapeDrawable;
     }
 
@@ -176,7 +216,6 @@ public class MainActivity extends Activity {
     }
 
     private void requestPermissions() {
-        // Request permissions needed for WiFi operations
         String[] permissions = {
                 Manifest.permission.ACCESS_COARSE_LOCATION,
                 Manifest.permission.ACCESS_FINE_LOCATION,
@@ -209,7 +248,6 @@ public class MainActivity extends Activity {
         if (!wifiManager.isWifiEnabled()) {
             Toast.makeText(this, "מפעיל WiFi...", Toast.LENGTH_LONG).show();
             wifiManager.setWifiEnabled(true);
-            // Register receiver to wait for WiFi to enable
             wifiReceiver = new WifiReceiver() {
                 @Override
                 public void onReceive(Context context, Intent intent) {
@@ -218,7 +256,7 @@ public class MainActivity extends Activity {
                         if (state == WifiManager.WIFI_STATE_ENABLED) {
                             Toast.makeText(MainActivity.this, "WiFi הופעל. סורק רשתות...", Toast.LENGTH_SHORT).show();
                             startWifiScan();
-                            unregisterReceiver(this); // Unregister once enabled
+                            unregisterReceiver(this);
                         } else if (state == WifiManager.WIFI_STATE_DISABLED) {
                              Toast.makeText(MainActivity.this, "WiFi לא הופעל.", Toast.LENGTH_LONG).show();
                              unregisterReceiver(this);
@@ -247,7 +285,7 @@ public class MainActivity extends Activity {
                     } else {
                         Toast.makeText(MainActivity.this, "סריקת WiFi נכשלה.", Toast.LENGTH_SHORT).show();
                     }
-                    unregisterReceiver(this); // Unregister after processing results
+                    unregisterReceiver(this);
                 }
             }
         };
@@ -277,37 +315,36 @@ public class MainActivity extends Activity {
     }
 
     private void updateWifiList() {
-        List<String> wifiDisplayNames = new ArrayList<>();
-        for (ScanResult result : wifiScanList) {
-            String capabilities = result.capabilities;
-            String security = "פתוחה";
-            if (capabilities.contains("WEP")) {
-                security = "WEP";
-            } else if (capabilities.contains("WPA2")) { // Prioritize WPA2 over WPA
-                security = "WPA2";
-            } else if (capabilities.contains("WPA")) {
-                security = "WPA";
-            } else if (capabilities.contains("WPA3")) {
-                security = "WPA3";
-            }
-
-            // A simple way to show signal strength
-            String signalStrength;
-            int level = result.level;
-            if (level >= -50) {
-                signalStrength = "חזק";
-            } else if (level >= -70) {
-                signalStrength = "בינוני";
-            } else {
-                signalStrength = "חלש";
-            }
-            wifiDisplayNames.add(result.SSID + " [" + signalStrength + "] (" + security + ")");
-        }
         wifiListAdapter.clear();
-        wifiListAdapter.addAll(wifiDisplayNames);
+        for (ScanResult result : wifiScanList) {
+            wifiListAdapter.add(result.SSID); // Add only SSID, details handled in getView
+        }
         wifiListAdapter.notifyDataSetChanged();
     }
 
+    private String getSecurityType(String capabilities) {
+        if (capabilities.contains("WEP")) {
+            return "WEP";
+        } else if (capabilities.contains("WPA3")) {
+            return "WPA3";
+        } else if (capabilities.contains("WPA2")) {
+            return "WPA2";
+        } else if (capabilities.contains("WPA")) {
+            return "WPA";
+        } else {
+            return "פתוחה";
+        }
+    }
+
+    private String getSignalStrength(int level) {
+        if (level >= -50) {
+            return "חזק";
+        } else if (level >= -70) {
+            return "בינוני";
+        } else {
+            return "חלש";
+        }
+    }
 
     private void connectToWifi(String ssid, String password) {
         WifiConfiguration wifiConfiguration = new WifiConfiguration();
@@ -316,29 +353,30 @@ public class MainActivity extends Activity {
         boolean isSecured = !password.isEmpty();
         if (isSecured) {
             wifiConfiguration.preSharedKey = "\"" + password + "\"";
-            // Attempt to determine the correct security type based on common capabilities
-            if (ssid.contains("WPA3")) { // Simplified WPA3 detection, actual detection is complex
+            String security = getSecurityType(getScanResultCapabilities(ssid)); // Determine security type
+
+            if ("WPA3".equals(security)) {
                 wifiConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
                 wifiConfiguration.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
                 wifiConfiguration.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
                 wifiConfiguration.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-            } else if (ssid.contains("WPA2")) {
+            } else if ("WPA2".equals(security)) {
                 wifiConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
                 wifiConfiguration.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
                 wifiConfiguration.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
                 wifiConfiguration.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.CCMP);
-            } else if (ssid.contains("WPA")) {
+            } else if ("WPA".equals(security)) {
                 wifiConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
                 wifiConfiguration.allowedAuthAlgorithms.set(WifiConfiguration.AuthAlgorithm.OPEN);
                 wifiConfiguration.allowedProtocols.set(WifiConfiguration.Protocol.WPA);
                 wifiConfiguration.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.TKIP);
                 wifiConfiguration.allowedGroupCiphers.set(WifiConfiguration.GroupCipher.TKIP);
-            } else if (ssid.contains("WEP")) {
+            } else if ("WEP".equals(security)) {
                 wifiConfiguration.wepKeys[0] = "\"" + password + "\"";
                 wifiConfiguration.wepTxKeyIndex = 0;
                 wifiConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
             } else {
-                 // Assume WPA2 PSK if no specific type is detected but password is provided
+                 // Default to WPA2 PSK if password is provided but security type is unknown/open
                  wifiConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.WPA_PSK);
                  wifiConfiguration.allowedProtocols.set(WifiConfiguration.Protocol.RSN);
                  wifiConfiguration.allowedPairwiseCiphers.set(WifiConfiguration.PairwiseCipher.CCMP);
@@ -348,14 +386,12 @@ public class MainActivity extends Activity {
             wifiConfiguration.allowedKeyManagement.set(WifiConfiguration.KeyMgmt.NONE);
         }
 
-
         int netId = -1;
         List<WifiConfiguration> existingConfigs = wifiManager.getConfiguredNetworks();
         if (existingConfigs != null) {
             for (WifiConfiguration config : existingConfigs) {
                 if (config.SSID.equals("\"" + ssid + "\"")) {
                     netId = config.networkId;
-                    // If found, update configuration if password changed or if it was open and now secured
                     if (isSecured && !password.isEmpty()) {
                         config.preSharedKey = "\"" + password + "\"";
                         wifiManager.updateNetwork(config);
@@ -387,6 +423,15 @@ public class MainActivity extends Activity {
         }
     }
 
+    // Helper method to get capabilities for a given SSID (simplistic, assumes first match)
+    private String getScanResultCapabilities(String ssid) {
+        for (ScanResult result : wifiScanList) {
+            if (result.SSID.equals(ssid)) {
+                return result.capabilities;
+            }
+        }
+        return ""; // Not found
+    }
 
     private void connectToWifi() {
         String password = passwordEditText.getText().toString();
@@ -400,7 +445,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        // Re-register receiver if needed or re-scan
         if (wifiManager != null && checkPermissions()) {
              if (!wifiManager.isWifiEnabled()) {
                  initializeWifiManager();
@@ -413,7 +457,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onPause() {
         super.onPause();
-        // Unregister receiver to prevent leaks and battery drain
         if (wifiReceiver != null) {
             try {
                 unregisterReceiver(wifiReceiver);
@@ -426,7 +469,6 @@ public class MainActivity extends Activity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // Final unregister for safety
         if (wifiReceiver != null) {
             try {
                 unregisterReceiver(wifiReceiver);
@@ -436,8 +478,6 @@ public class MainActivity extends Activity {
         }
     }
 
-    // Simple utility to determine if a network is open based on its capabilities string
-    // This is a simplification, actual open networks might have different indicators.
     public static boolean isNetworkOpen(String capabilities) {
         return capabilities.contains("ESS") &&
                !capabilities.contains("WEP") &&
