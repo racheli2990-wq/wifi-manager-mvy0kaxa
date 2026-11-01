@@ -8,7 +8,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageManager;
 import android.graphics.drawable.ShapeDrawable;
-import android.graphics.drawable.RoundRectShape;
+import android.graphics.drawable.shapes.RoundRectShape; // Corrected import
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiConfiguration;
 import android.net.wifi.WifiManager;
@@ -159,7 +159,7 @@ public class MainActivity extends Activity {
         for (int i = 0; i < 8; i++) {
             outerRadii[i] = radius;
         }
-        ShapeDrawable shapeDrawable = new ShapeDrawable(new RoundRectShape(outerRadii, null, null));
+        ShapeDrawable shapeDrawable = new ShapeDrawable(new RoundRectShape(outerRadii, null, null)); // Corrected usage
         shapeDrawable.getPaint().setColor(color);
         return shapeDrawable;
     }
